@@ -28,6 +28,7 @@ public class ImageView : NSObject,FlutterPlatformView{
         let dict = params as! NSDictionary
         self.frame = frame
         self.container = UIView(frame: frame)
+//        self.container.backgroundColor = .white
         self.width = Int(dict.value(forKey: "width") as! Double)
         self.height = Int(dict.value(forKey: "height") as! Double)
         self.path = dict.value(forKey: "path") as! String
@@ -35,13 +36,14 @@ public class ImageView : NSObject,FlutterPlatformView{
         self.channel = FlutterMethodChannel.init(name: "com.gstory.gpu_image/image_" + String(id), binaryMessenger: binaryMessenger)
         self.initMethodCall()
         renderView = RenderView.init(frame: CGRect.init(x: 0, y: 0, width: self.width, height: self.height))
+        renderView.backgroundRenderColor = Color.white
         initPic()
         self.container.addSubview(renderView)
     }
     
     
     private func initPic(){
-        print(path)
+        print("组合前的地址" + path)
         if(path.starts(with: "http")){
             let url = NSURL(string: path)
             let data = NSData(contentsOf: url! as URL)
@@ -50,8 +52,8 @@ public class ImageView : NSObject,FlutterPlatformView{
         }else{
             guard let outputPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first else { return }
             let photoPath = outputPath + "/" + path
-            print(photoPath)
-            if let image = UIImage(contentsOfFile: photoPath) {
+            print("组合后的地址:" + photoPath)
+            if let image = UIImage(contentsOfFile: path) {
                 picture = PictureInput(image:image)
             } else {
                 print("文件不存在")
@@ -101,7 +103,7 @@ public class ImageView : NSObject,FlutterPlatformView{
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {
             //延迟0.5秒执行 可能会出现保存未完成的问题 
             print(saveUrl)
-            let map : NSDictionary = ["path":saveName]
+            let map : NSDictionary = ["path":saveUrl.absoluteString .replacingOccurrences(of:"file://", with: "")]
             self.channel?.invokeMethod("saveImage",arguments: map)
         }
     }

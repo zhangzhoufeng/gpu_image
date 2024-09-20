@@ -54,7 +54,7 @@ class GPUImageWidgetState extends State<GPUImageWidget> {
         ),
       );
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-      return SizedBox(
+      return Container(
         width: widget.width ?? MediaQuery.of(context).size.width,
         height: widget.height ?? MediaQuery.of(context).size.height,
         child: UiKitView(
@@ -72,23 +72,21 @@ class GPUImageWidgetState extends State<GPUImageWidget> {
       return Container();
     }
   }
-
-
 }
 
-class GPUImageController{
-   MethodChannel? _methodChannel;
+class GPUImageController {
+  MethodChannel? _methodChannel;
 
   SaveImage? _saveCallBack;
 
-  init(int id,String viewType){
+  init(int id, String viewType) {
     _methodChannel = MethodChannel("${viewType}_$id");
     _methodChannel?.setMethodCallHandler(_platformCallHandler);
   }
 
   ///设置滤镜
-  void setFilter(GPUFilter filter) {
-    _methodChannel?.invokeMethod('setFilter', filter.toJson());
+  void setFilter(GPUFilter filter) async {
+    await _methodChannel?.invokeMethod('setFilter', filter.toJson());
   }
 
   ///保存图片
@@ -97,17 +95,16 @@ class GPUImageController{
   }
 
   ///保存结果监听
-  void saveListen(dynamic saveImage){
+  void saveListen(dynamic saveImage) {
     _saveCallBack = saveImage;
   }
 
-
   //监听原生view传值
   Future<dynamic> _platformCallHandler(MethodCall call) async {
-    switch(call.method){
+    switch (call.method) {
       case "saveImage":
         Map map = call.arguments;
-        if(_saveCallBack != null){
+        if (_saveCallBack != null) {
           _saveCallBack!(map["path"]);
         }
         break;
